@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.DepartmentDto;
+import com.example.demo.dto.OrganizationDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,4 +13,7 @@ public interface APIClient {
     // Build get department rest api
     @GetMapping("api/departments/{department-code}")
     DepartmentDto getDepartment(@PathVariable("department-code") String departmentCode);
+
+//    @GetMapping("api/organizations/{code}")
+//    OrganizationDto getOrganizationCode(@PathVariable("code") String code);
 }

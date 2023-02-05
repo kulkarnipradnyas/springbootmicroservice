@@ -4,11 +4,14 @@ package com.example.demo.service.impl;
 import com.example.demo.dto.APIResponseDto;
 import com.example.demo.dto.DepartmentDto;
 import com.example.demo.dto.EmployeeDto;
+import com.example.demo.dto.OrganizationDto;
 import com.example.demo.entity.Employee;
 import com.example.demo.mapper.EmployeeMapper;
 import com.example.demo.repository.EmployeeRepository;
 import com.example.demo.service.APIClient;
 import com.example.demo.service.EmployeeService;
+import com.example.demo.service.OrganizationApiClient;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 
 
@@ -32,7 +35,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private RestTemplate restTemplate;
     private WebClient webClient;
    private APIClient apiClient;
-
+   private OrganizationApiClient organizationApiClient;
     @Override
     public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
 
@@ -45,6 +48,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         return savedEmployeeDto;
     }
 
+    //@CircuitBreaker(name = "${spring.application.name}", fallbackMethod = "getDefaultDepartment")
+     @Retry(name = "${spring.application.name}", fallbackMethod = "getDefaultDepartment")
     @Override
     public APIResponseDto getEmployeeById(Long employeeId) {
         Employee employee= employeeRepository.findById(employeeId).get();
@@ -54,6 +59,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 //                uri("http://localhost:8080/api/departments/" + employee.getDepartmentCode()).
 //                retrieve().bodyToMono(DepartmentDto.class).block();
         DepartmentDto departmentDto= apiClient.getDepartment(employee.getDepartmentCode());
+
+         OrganizationDto organizationDto = organizationApiClient.getOrganizationCode(employee.getOrganizationCode());
+
         EmployeeDto employeeDto=new EmployeeDto(employee.getId(),
                 employee.getFirstName(),
                 employee.getLastName(),
@@ -64,6 +72,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         APIResponseDto apiResponseDto=new APIResponseDto();
         apiResponseDto.setEmployee(employeeDto);
         apiResponseDto.setDepartment(departmentDto);
+
+        apiResponseDto.setOrganization(organizationDto);
         return apiResponseDto;
     }
 
